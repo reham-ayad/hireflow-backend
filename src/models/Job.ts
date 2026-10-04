@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
-
+import { IUser } from "./User";
 export interface IJob extends Document {
+  employer: IUser;
   title: string;
   company: string;
   description: string;
@@ -12,6 +13,12 @@ export interface IJob extends Document {
 
 const jobSchema = new Schema<IJob>(
   {
+
+    employer: {
+  type: Schema.Types.ObjectId,
+  ref: "User",
+  required: true,
+},
     title: {
       type: String,
       required: true,

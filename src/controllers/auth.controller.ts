@@ -8,7 +8,7 @@ export const register = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { name, email, password, confirmPassword } = req.body;
+    const { name, email, password, confirmPassword , role } = req.body;
 
     // Validate required fields
     if (!name || !email || !password || !confirmPassword) {
@@ -40,11 +40,12 @@ export const register = async (
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-    });
+  const user = await User.create({
+  name,
+  email,
+  password: hashedPassword,
+  role,
+});
 
     res.status(201).json({
       message: "User registered successfully",

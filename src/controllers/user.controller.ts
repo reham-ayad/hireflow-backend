@@ -32,8 +32,16 @@ export const updateProfile = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { name, phone, location, bio, skills } = req.body;
-
+const {
+  name,
+  phone,
+  location,
+  jobTitle,
+  bio,
+  skills,
+  resume,
+  profileImage,
+} = req.body;
     const user = await User.findById(req.userId);
 
     if (!user) {
@@ -44,25 +52,29 @@ export const updateProfile = async (
     }
 
     if (name !== undefined) user.name = name;
-    if (phone !== undefined) user.phone = phone;
-    if (location !== undefined) user.location = location;
-    if (bio !== undefined) user.bio = bio;
-    if (skills !== undefined) user.skills = skills;
-
+if (phone !== undefined) user.phone = phone;
+if (location !== undefined) user.location = location;
+if (jobTitle !== undefined) user.jobTitle = jobTitle;
+if (bio !== undefined) user.bio = bio;
+if (skills !== undefined) user.skills = skills;
+if (resume !== undefined) user.resume = resume;
+if (profileImage !== undefined) user.profileImage = profileImage;
     await user.save();
 
     res.status(200).json({
       message: "Profile updated successfully",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        location: user.location,
-        bio: user.bio,
-        skills: user.skills,
-        resume: user.resume,
-      },
+     user: {
+  id: user._id,
+  name: user.name,
+  email: user.email,
+  phone: user.phone,
+  location: user.location,
+  jobTitle: user.jobTitle,
+  bio: user.bio,
+  skills: user.skills,
+  resume: user.resume,
+  profileImage: user.profileImage,
+},
     });
   } catch (error) {
     console.error("Update profile error:", error);

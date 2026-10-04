@@ -9,7 +9,6 @@ export const applyToJob = async (
 ): Promise<void> => {
   try {
     const { jobId } = req.params;
-
     const userId = req.userId;
 
     if (!userId) {
@@ -40,9 +39,30 @@ export const applyToJob = async (
       return;
     }
 
+    const {
+      fullName,
+      email,
+      phone,
+      location,
+      jobTitle,
+      skills,
+      resume,
+      coverLetter,
+    } = req.body;
+
     const application = await Application.create({
       user: userId,
       job: job._id,
+
+      fullName,
+      email,
+      phone,
+      location,
+      jobTitle,
+      skills,
+      resume,
+      coverLetter,
+
       status: "Pending",
     });
 
