@@ -1,9 +1,9 @@
 import mongoose, { Document, Schema } from "mongoose";
-import { IUser } from "./User";
+
 export interface IJob extends Document {
-  employer: IUser;
+  employer: mongoose.Types.ObjectId;
+company: mongoose.Types.ObjectId;
   title: string;
-  company: string;
   description: string;
   location: string;
   jobType: string;
@@ -13,23 +13,24 @@ export interface IJob extends Document {
 
 const jobSchema = new Schema<IJob>(
   {
-
-    employer: {
+    company: {
   type: Schema.Types.ObjectId,
-  ref: "User",
+  ref: "Company",
   required: true,
 },
+    employer: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
     title: {
       type: String,
       required: true,
       trim: true,
     },
 
-    company: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+   
 
     description: {
       type: String,

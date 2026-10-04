@@ -8,6 +8,7 @@ import jobRoutes from "./routes/job.routes";
 import applicationRoutes from "./routes/application.routes";
 import savedJobRoutes from "./routes/saved-job.routes";
 import companyRoutes from "./routes/company.routes";
+import notificationRoutes from "./routes/notification.routes";
 dotenv.config();
 
 const app = express();
@@ -20,6 +21,7 @@ app.use("/api/jobs", jobRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/saved-jobs", savedJobRoutes);
 app.use("/api/companies", companyRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.get("/", (req, res) => {
   res.json({
     message: "HireFlow API is running"

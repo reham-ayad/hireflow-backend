@@ -4,11 +4,12 @@ import {
   getJobById,
   createJob,
 } from "../controllers/job.controller";
+import { protect } from "../middleware/auth.middleware";
 
 const router = Router();
 
 router.get("/", getJobs);
 router.get("/:id", getJobById);
-router.post("/", createJob);
+router.post("/",protect,  createJob);
 
 export default router;

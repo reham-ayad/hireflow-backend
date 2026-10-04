@@ -1,6 +1,8 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface ICompany extends Document {
+  owner: mongoose.Types.ObjectId;
+
   name: string;
   logo?: string;
   description?: string;
@@ -12,6 +14,13 @@ export interface ICompany extends Document {
 
 const companySchema = new Schema<ICompany>(
   {
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      unique: true,
+    },
+
     name: {
       type: String,
       required: true,

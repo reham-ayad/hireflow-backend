@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import Job from "../models/Job";
+import User from "../models/User";
+import { AuthRequest } from "../middleware/auth.middleware";
 
 export const getJobs = async (
   req: Request,
@@ -49,10 +51,36 @@ export const getJobById = async (
 };
 
 export const createJob = async (
-  req: Request,
+  req: AuthRequest,
   res: Response
 ): Promise<void> => {
   try {
+    const userId = req.userId;
+
+    if (!userId) {
+      res.status(401).json({
+        message: "Not authorized",
+      });
+      return;
+    }
+
+    // Check if the logged-in user is an employer
+    const user = await User.findById(userId);
+
+    if (!user) {
+      res.status(404).json({
+        message: "User not found",
+      });
+      return;
+    }
+
+    if (user.role !== "employer") {
+      res.status(403).json({
+        message: "Only employers can create jobs",
+      });
+      return;
+    }
+
     const {
       title,
       company,
@@ -77,6 +105,7 @@ export const createJob = async (
     }
 
     const job = await Job.create({
+      employer: userId,
       title,
       company,
       description,
