@@ -298,3 +298,54 @@ if (job.employer.toString() !== userId.toString()) {
     });
   }
 };
+
+export const deleteApplication = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.userId;
+    const { applicationId } = req.params;
+
+    if (!userId) {
+      res.status(401).json({
+        message: "Not authorized",
+      });
+      return;
+    }
+
+    const application = await Application.findById(applicationId);
+
+    if (!application) {
+      res.status(404).json({
+        message: "Application not found",
+      });
+      return;
+    }
+
+    // Make sure the application belongs to the logged-in user
+    if (application.user.toString() !== userId.toString()) {
+      res.status(403).json({
+        message: "You can only delete your own application",
+      });
+      return;
+    }
+
+    await Application.findByIdAndDelete(applicationId);
+
+    // Delete related notifications
+    await Notification.deleteMany({
+      application: application._id,
+    });
+
+    res.status(200).json({
+      message: "Application deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete application error:", error);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};

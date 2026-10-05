@@ -8,7 +8,9 @@ export const getJobs = async (
   res: Response
 ): Promise<void> => {
   try {
-    const jobs = await Job.find().sort({ createdAt: -1 });
+   const jobs = await Job.find()
+  .populate("company", "name logo")
+  .sort({ createdAt: -1 });
 
     res.status(200).json({
       jobs,
@@ -29,7 +31,8 @@ export const getJobById = async (
   try {
     const { id } = req.params;
 
-    const job = await Job.findById(id);
+const job = await Job.findById(id)
+      .populate('company', 'name logo');
 
     if (!job) {
       res.status(404).json({
@@ -121,6 +124,54 @@ export const createJob = async (
     });
   } catch (error) {
     console.error("Create job error:", error);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
+
+
+export const deleteJob = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.userId;
+
+    if (!userId) {
+      res.status(401).json({
+        message: "Not authorized",
+      });
+      return;
+    }
+
+    const { id } = req.params;
+
+    const job = await Job.findById(id);
+
+    if (!job) {
+      res.status(404).json({
+        message: "Job not found",
+      });
+      return;
+    }
+
+    // Make sure the logged-in employer owns this job
+    if (job.employer.toString() !== userId.toString()) {
+      res.status(403).json({
+        message: "You are not allowed to delete this job",
+      });
+      return;
+    }
+
+    await Job.findByIdAndDelete(id);
+
+    res.status(200).json({
+      message: "Job deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete job error:", error);
 
     res.status(500).json({
       message: "Server error",

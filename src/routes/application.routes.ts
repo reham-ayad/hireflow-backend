@@ -4,6 +4,7 @@ import {
   getApplicationsByJob,
   getMyApplications,
     updateApplicationStatus,
+      deleteApplication
 } from "../controllers/application.controller";
 import { protect } from "../middleware/auth.middleware";
 
@@ -14,4 +15,5 @@ router.post("/:jobId", protect, applyToJob);
 router.get("/my-applications", protect, getMyApplications);
 router.get("/job/:jobId", protect, getApplicationsByJob);
 router.patch("/:applicationId/status", protect, updateApplicationStatus);
+router.delete("/:applicationId",protect,deleteApplication);
 export default router;

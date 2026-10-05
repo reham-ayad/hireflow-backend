@@ -11,7 +11,7 @@ export const register = async (
     const { name, email, password, confirmPassword , role } = req.body;
 
     // Validate required fields
-    if (!name || !email || !password || !confirmPassword) {
+    if (!name || !email || !password || !confirmPassword || !role) {
       res.status(400).json({
         message: "All fields are required",
       });
@@ -53,6 +53,7 @@ export const register = async (
         id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
       },
     });
   } catch (error) {
@@ -125,6 +126,156 @@ export const login = async (
     });
   } catch (error) {
     console.error("Login error:", error);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
+
+export const forgotPassword = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      res.status(400).json({
+        message: "Email is required",
+      });
+      return;
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      res.status(404).json({
+        message: "User not found",
+      });
+      return;
+    }
+
+    // Create reset token
+    const resetToken = jwt.sign(
+      {
+        userId: user._id,
+        type: "password-reset",
+      },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: "15m",
+      }
+    );
+
+    // Temporary response for development
+    res.status(200).json({
+      message: "Password reset token created",
+      resetToken,
+    });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
+
+export const resetPassword = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const {
+      resetToken,
+      newPassword,
+      confirmPassword,
+    } = req.body;
+
+    if (!resetToken || !newPassword || !confirmPassword) {
+      res.status(400).json({
+        message: "All fields are required",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      res.status(400).json({
+        message: "Passwords do not match",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      res.status(400).json({
+        message: "Password must be at least 6 characters",
+      });
+      return;
+    }
+
+    // Verify reset token
+    let decoded: any;
+
+    try {
+      decoded = jwt.verify(
+        resetToken,
+        process.env.JWT_SECRET as string
+      );
+    } catch (error) {
+      res.status(400).json({
+        message: "Invalid or expired reset token",
+      });
+      return;
+    }
+
+    if (decoded.type !== "password-reset") {
+      res.status(400).json({
+        message: "Invalid reset token",
+      });
+      return;
+    }
+
+    const user = await User.findById(decoded.userId);
+
+    if (!user) {
+      res.status(404).json({
+        message: "User not found",
+      });
+      return;
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(
+      newPassword,
+      10
+    );
+
+    user.password = hashedPassword;
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Password reset successfully",
+    });
+  } catch (error) {
+    console.error("Reset password error:", error);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
+export const logout = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    res.status(200).json({
+      message: "Logout successful",
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
 
     res.status(500).json({
       message: "Server error",

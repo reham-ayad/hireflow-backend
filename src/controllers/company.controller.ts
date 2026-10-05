@@ -154,3 +154,93 @@ export const createCompany = async (
     });
   }
 };
+
+
+export const deleteCompany = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.userId;
+
+    if (!userId) {
+      res.status(401).json({
+        message: "Not authorized",
+      });
+      return;
+    }
+
+    const { id } = req.params;
+
+    const company = await Company.findById(id);
+
+    if (!company) {
+      res.status(404).json({
+        message: "Company not found",
+      });
+      return;
+    }
+
+    // Make sure the logged-in user owns this company
+    if (company.owner.toString() !== userId.toString()) {
+      res.status(403).json({
+        message: "You are not allowed to delete this company",
+      });
+      return;
+    }
+
+    // Delete all jobs belonging to this company
+    await Job.deleteMany({
+      company: company._id,
+    });
+
+    // Delete the company
+    await Company.findByIdAndDelete(id);
+
+    res.status(200).json({
+      message: "Company and its jobs deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete company error:", error);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
+
+
+export const getCompanyJobs = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const company = await Company.findById(id);
+
+    if (!company) {
+      res.status(404).json({
+        message: "Company not found",
+      });
+      return;
+    }
+
+    const jobs = await Job.find({
+      company: company._id,
+    }).sort({
+      createdAt: -1,
+    });
+
+    res.status(200).json({
+      company,
+      jobs,
+    });
+  } catch (error) {
+    console.error("Get company jobs error:", error);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
